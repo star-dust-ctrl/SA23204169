@@ -17,16 +17,8 @@
 \section{Vignettes}{
 \tabular{ll}{
 \strong{Title} \tab \strong{Description} \cr
-\href{../doc/A-SA23204169-2023-9-11.html}{A-SA23204169-2023-9-11} \tab Homework-2023-9-11 \cr
-\href{../doc/A-SA23204169-2023-9-18.html}{A-SA23204169-2023-9-18} \tab Homework-2023-9-18 \cr
-\href{../doc/A-SA23204169-2023-9-25.html}{A-SA23204169-2023-9-25} \tab Homework-2023-9-25 \cr
-\href{../doc/A-SA23204169-2023-10-9.html}{A-SA23204169-2023-10-9} \tab Homework-2023-10-9 \cr
-\href{../doc/A-SA23204169-2023-10-16.html}{A-SA23204169-2023-10-16} \tab Homework-2023-10-16 \cr
-\href{../doc/A-SA23204169-2023-10-23.html}{A-SA23204169-2023-10-23} \tab Homework-2023-10-23 \cr
-\href{../doc/A-SA23204169-2023-10-30.html}{A-SA23204169-2023-10-30} \tab Homework-2023-10-30 \cr
-\href{../doc/A-SA23204169-2023-11-6.html}{A-SA23204169-2023-11-6} \tab Homework-2023-11-6 \cr
-\href{../doc/A-SA23204169-2023-11-13.html}{A-SA23204169-2023-11-13} \tab Homework-2023-11-13 \cr
-\href{../doc/A-SA23204169-2023-11-20.html}{A-SA23204169-2023-11-20} \tab Homework-2023-11-20 
+\href{../doc/Homework.html}{Homework} \tab Homework of Statistical Computin \cr
+\href{../doc/PackageExample.html}{PackageExample} \tab Provide some user examples for the functions in this package.
 }
 }
 \author{

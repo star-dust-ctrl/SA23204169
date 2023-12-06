@@ -7,7 +7,7 @@
 Use R package \code{microbenchmark} to compare the performance of R function \code{kmeansR} and Cpp function \code{kmeansCpp}.
 }
 \details{
-Using Rcpp while implementing K-means improves the efficiency, however the built-in function of R is still faster. We also
+Using Rcpp while implementing K-means improves the efficiency, similar to the built-in function of R. We also
 note that I use lots of loops in the R implementation, so there exactly may be better solution, however, the speed-up effect of Rcpp is obvious though.
 }
 \examples{

@@ -1,0 +1,123 @@
+---
+title: "Package Example"
+author: "Huiyang Peng"
+date: "2023-12-6"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Package Example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# SubgroupSolver
+
+Note that this is a `reference class` in R. With this class I implement the method proposed by Shujie Ma & Jian Huang in 2016 for subgroup analysis.
+
+## Initialize
+
+The initialization of SubgroupSolver is easy: `solver <- SubgroupSolver(X,y)`, where `X` is a n*p numeric matrix, each row representing a sample and each column representing a variable. `y` is a numeric vector with length n, which is the response variable of each sample.
+
+Here we simulate X from a multivariate normal distribution with $p=5$. 
+
+```{r}
+library(SA23204169)
+library(mvtnorm)
+set.seed(1)
+covmatrix <- matrix(0.3, ncol = 5, nrow = 5)
+diag(covmatrix) <- 1
+meanvalue <- rep(0,5)
+X <- rmvnorm(100, meanvalue, covmatrix)
+beta <- runif(5, min = 0.5, max = 1)
+mu <- sample(c(-2, 2), size = 100, replace = TRUE)
+eps <- rnorm(100, 0, 0.5)
+y <- as.vector(X %*% beta) + mu + eps
+```
+
+```{r}
+# initialize the solver
+solver <- SubgroupSolver(X,y)
+```
+
+## Algorithm
+
+Our aim is to minimize the following function:
+
+$$\mathcal{Q}_n(\mu,\beta;\lambda)=\frac{1}{2}\sum_{i=1}^n (y_i-\mu_i-x_i^T\beta)^2+\sum_{1\le i<j\le n}p(|\mu_i-\mu_j|,\lambda)$$,
+
+where $p(\cdot, \lambda)$ is a concave penalty function with a tuning parameter.
+
+Then it's equivalent to the constraint optimization problem:
+
+$$S(\mu,\beta,\eta)=\frac{1}{2}\sum_{i=1}^n (y_i-\mu_i-x_i^T\beta)^2+\sum_{i<j} p(|\eta_{ij}|,\lambda)\\ where \quad \mu_i-\mu_j-\eta_{ij}=0$$.
+
+By the augmented Lagrangian method, the estimates of the parameters can be obtained by minimizing:
+
+$$L(\mu,\beta,\eta,\nu)=S(\mu,\beta,\eta)+\sum_{i<j} \nu_{ij}(\mu_i-\mu_j-\eta_{ij})+\frac{\theta}{2}\sum_{i<j}(\mu_i-\mu_j-\eta_{ij})^2$$
+
+where $\nu_{ij}$ are Lagrange multipliers and $\theta$ is the penalty parameter. Here we adapt ADMM to solve the optimization problem.
+
+## Penalty
+
+Here the paper suggests three kinds of penalties: MCP, SCAD and L1.
+
+MCP:
+
+$$p_\gamma(t,\lambda)=\lambda\int_0^t (1-x/(\gamma\lambda))_+ dx$$
+
+SCAD:
+
+$$p_\gamma(t,\lambda)=\lambda\int_0^t \min\{1,(\gamma-x/\lambda)_+/(\gamma-1)\}dx$$
+
+L1:
+
+$$p_\omega(t,\lambda)=\lambda\omega_{ij}|t|$$
+
+## Usage
+
+All operators are done in-place inside the object, we only need to use the `fit` method:
+
+```{r}
+solver$fit("MCP", 0.6, 3, 1)
+solver$mu
+```
+
+Obviously the points are gathered around -1.9 and 1.9.
+
+## Reference
+
+Shujie Ma & Jian Huang(2016).《A concave pairwise fusion approach to subgroup analysis》
+
+# kmeansR and kmeansCpp
+
+Here I write two functions, implementing K-means algorithm with R and Rcpp.
+
+## Algorithm
+
+Given a set of observations $(x_1,x_2,\cdots,x_n)$. k-means clustering aims to partition the n observations into $k (\le n)$ sets $S = \{S_1, S_2, ..., S_k\}$ so as to minimize the within-cluster sum of squares (WCSS).
+
+$$\arg \min_{S} \sum_{i=1}^k \sum_{x\in S_i}||x-\mu_i||^2$$
+
+where $\mu_i$ is the mean (also called centroid) of points in $S_i$.
+
+## Usage
+
+Here we compare R built-in function `kmeans`, R function `kmeansR` and Rcpp function `kmeansCpp` on Sepal Length and Sepal Width of dataset `iris`.
+
+```{r}
+library(microbenchmark)
+set.seed(0)
+dat <- as.matrix(iris[,1:2])
+ts <- microbenchmark(
+  kmeansR = kmeansR(dat,3),
+  kmeansCpp = kmeansCpp(dat,3),
+  kmeans = kmeans(dat, 3)
+)
+print(summary(ts)[,c(1,3,5,6)])
+```
+
+We observe that Rcpp greatly improve the efficiency, it takes almost the same time as R built-in function to solve the problem.

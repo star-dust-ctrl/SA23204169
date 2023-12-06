@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Huiyang Peng" />
+
+
+<title>Package Example</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Package Example</h1>
+<h4 class="author">Huiyang Peng</h4>
+<h4 class="date">2023-12-6</h4>
+
+
+
+<div id="subgroupsolver" class="section level1">
+<h1>SubgroupSolver</h1>
+<p>Note that this is a <code>reference class</code> in R. With this
+class I implement the method proposed by Shujie Ma &amp; Jian Huang in
+2016 for subgroup analysis.</p>
+<div id="initialize" class="section level2">
+<h2>Initialize</h2>
+<p>The initialization of SubgroupSolver is easy:
+<code>solver &lt;- SubgroupSolver(X,y)</code>, where <code>X</code> is a
+n*p numeric matrix, each row representing a sample and each column
+representing a variable. <code>y</code> is a numeric vector with length
+n, which is the response variable of each sample.</p>
+<p>Here we simulate X from a multivariate normal distribution with <span class="math inline">\(p=5\)</span>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(SA23204169)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(mvtnorm)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>covmatrix <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fl">0.3</span>, <span class="at">ncol =</span> <span class="dv">5</span>, <span class="at">nrow =</span> <span class="dv">5</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">diag</span>(covmatrix) <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>meanvalue <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>,<span class="dv">5</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">rmvnorm</span>(<span class="dv">100</span>, meanvalue, covmatrix)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>beta <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">5</span>, <span class="at">min =</span> <span class="fl">0.5</span>, <span class="at">max =</span> <span class="dv">1</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>mu <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>), <span class="at">size =</span> <span class="dv">100</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>eps <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="fl">0.5</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(X <span class="sc">%*%</span> beta) <span class="sc">+</span> mu <span class="sc">+</span> eps</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># initialize the solver</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>solver <span class="ot">&lt;-</span> <span class="fu">SubgroupSolver</span>(X,y)</span></code></pre></div>
+</div>
+<div id="algorithm" class="section level2">
+<h2>Algorithm</h2>
+<p>Our aim is to minimize the following function:</p>
+<p><span class="math display">\[\mathcal{Q}_n(\mu,\beta;\lambda)=\frac{1}{2}\sum_{i=1}^n
+(y_i-\mu_i-x_i^T\beta)^2+\sum_{1\le i&lt;j\le
+n}p(|\mu_i-\mu_j|,\lambda)\]</span>,</p>
+<p>where <span class="math inline">\(p(\cdot, \lambda)\)</span> is a
+concave penalty function with a tuning parameter.</p>
+<p>Then it’s equivalent to the constraint optimization problem:</p>
+<p><span class="math display">\[S(\mu,\beta,\eta)=\frac{1}{2}\sum_{i=1}^n
+(y_i-\mu_i-x_i^T\beta)^2+\sum_{i&lt;j} p(|\eta_{ij}|,\lambda)\\ where
+\quad \mu_i-\mu_j-\eta_{ij}=0\]</span>.</p>
+<p>By the augmented Lagrangian method, the estimates of the parameters
+can be obtained by minimizing:</p>
+<p><span class="math display">\[L(\mu,\beta,\eta,\nu)=S(\mu,\beta,\eta)+\sum_{i&lt;j}
+\nu_{ij}(\mu_i-\mu_j-\eta_{ij})+\frac{\theta}{2}\sum_{i&lt;j}(\mu_i-\mu_j-\eta_{ij})^2\]</span></p>
+<p>where <span class="math inline">\(\nu_{ij}\)</span> are Lagrange
+multipliers and <span class="math inline">\(\theta\)</span> is the
+penalty parameter. Here we adapt ADMM to solve the optimization
+problem.</p>
+</div>
+<div id="penalty" class="section level2">
+<h2>Penalty</h2>
+<p>Here the paper suggests three kinds of penalties: MCP, SCAD and
+L1.</p>
+<p>MCP:</p>
+<p><span class="math display">\[p_\gamma(t,\lambda)=\lambda\int_0^t
+(1-x/(\gamma\lambda))_+ dx\]</span></p>
+<p>SCAD:</p>
+<p><span class="math display">\[p_\gamma(t,\lambda)=\lambda\int_0^t
+\min\{1,(\gamma-x/\lambda)_+/(\gamma-1)\}dx\]</span></p>
+<p>L1:</p>
+<p><span class="math display">\[p_\omega(t,\lambda)=\lambda\omega_{ij}|t|\]</span></p>
+</div>
+<div id="usage" class="section level2">
+<h2>Usage</h2>
+<p>All operators are done in-place inside the object, we only need to
+use the <code>fit</code> method:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>solver<span class="sc">$</span><span class="fu">fit</span>(<span class="st">&quot;MCP&quot;</span>, <span class="fl">0.6</span>, <span class="dv">3</span>, <span class="dv">1</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>solver<span class="sc">$</span>mu</span></code></pre></div>
+<pre><code>##   [1] -1.902524  1.900017  1.900025 -1.902513  1.900025 -1.902520  1.900016
+##   [8]  1.900017  1.900016  1.900022  1.900024  1.900015 -1.902511  1.900025
+##  [15] -1.902520  1.900015  1.900024 -1.902513 -1.902496  1.900015 -1.902527
+##  [22]  1.900027 -1.902507 -1.902517  1.900018 -1.902513  1.900021 -1.902522
+##  [29] -1.902530  1.900017 -1.902523 -1.902499  1.900017 -1.902518  1.900020
+##  [36]  1.900026  1.900022  1.900016  1.900011 -1.902522 -1.902515  1.900024
+##  [43]  1.900022 -1.902528 -1.902534  1.900016 -1.902537 -1.902517  1.900025
+##  [50]  1.900017 -1.902514  1.900015 -1.902509 -1.902532  1.900012  1.900022
+##  [57]  1.900020  1.900020  1.900026 -1.902515 -1.902537 -1.902503  1.900019
+##  [64] -1.902507  1.900028 -1.902513 -1.902529  1.900019 -1.902533 -1.902505
+##  [71]  1.900026  1.900018  1.900015  1.900017  1.900012  1.900023  1.900021
+##  [78]  1.900016  1.900022  1.900023 -1.902512 -1.902502 -1.902510 -1.902495
+##  [85] -1.902511 -1.902525  1.900014  1.900021  1.900019 -1.902469 -1.902523
+##  [92]  1.900016 -1.902506  1.900019  1.900018  1.900015 -1.902506  1.900022
+##  [99]  1.900029 -1.902602</code></pre>
+<p>Obviously the points are gathered around -1.9 and 1.9.</p>
+</div>
+<div id="reference" class="section level2">
+<h2>Reference</h2>
+<p>Shujie Ma &amp; Jian Huang(2016).《A concave pairwise fusion approach
+to subgroup analysis》</p>
+</div>
+</div>
+<div id="kmeansr-and-kmeanscpp" class="section level1">
+<h1>kmeansR and kmeansCpp</h1>
+<p>Here I write two functions, implementing K-means algorithm with R and
+Rcpp.</p>
+<div id="algorithm-1" class="section level2">
+<h2>Algorithm</h2>
+<p>Given a set of observations <span class="math inline">\((x_1,x_2,\cdots,x_n)\)</span>. k-means clustering
+aims to partition the n observations into <span class="math inline">\(k
+(\le n)\)</span> sets <span class="math inline">\(S = \{S_1, S_2, ...,
+S_k\}\)</span> so as to minimize the within-cluster sum of squares
+(WCSS).</p>
+<p><span class="math display">\[\arg \min_{S} \sum_{i=1}^k \sum_{x\in
+S_i}||x-\mu_i||^2\]</span></p>
+<p>where <span class="math inline">\(\mu_i\)</span> is the mean (also
+called centroid) of points in <span class="math inline">\(S_i\)</span>.</p>
+</div>
+<div id="usage-1" class="section level2">
+<h2>Usage</h2>
+<p>Here we compare R built-in function <code>kmeans</code>, R function
+<code>kmeansR</code> and Rcpp function <code>kmeansCpp</code> on Sepal
+Length and Sepal Width of dataset <code>iris</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(microbenchmark)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">0</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(iris[,<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>])</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">microbenchmark</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">kmeansR =</span> <span class="fu">kmeansR</span>(dat,<span class="dv">3</span>),</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">kmeansCpp =</span> <span class="fu">kmeansCpp</span>(dat,<span class="dv">3</span>),</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">kmeans =</span> <span class="fu">kmeans</span>(dat, <span class="dv">3</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">summary</span>(ts)[,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">5</span>,<span class="dv">6</span>)])</span></code></pre></div>
+<pre><code>##        expr       lq  median      uq
+## 1   kmeansR 50365.15 53748.4 62560.8
+## 2 kmeansCpp  2132.60  2174.9  2392.8
+## 3    kmeans   145.00   277.9   303.9</code></pre>
+<p>We observe that Rcpp greatly improve the efficiency, it takes almost
+the same time as R built-in function to solve the problem.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

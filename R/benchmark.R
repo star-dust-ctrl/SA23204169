@@ -16,6 +16,6 @@
 #'#2 kmeansCpp   128.35   137.85   143.85
 #'#3    kmeans   113.85   141.65   249.65
 #'}
-#' @details Using Rcpp while implementing K-means improves the efficiency, however the built-in function of R is still faster. We also
+#' @details Using Rcpp while implementing K-means improves the efficiency, similar to the built-in function of R. We also
 #' note that I use lots of loops in the R implementation, so there exactly may be better solution, however, the speed-up effect of Rcpp is obvious though.
 NULL
