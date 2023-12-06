@@ -13,3 +13,5 @@ RoxygenNote: 7.2.3
 Encoding: UTF-8
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
+URL: http://github.com/star-dust-ctrl/SA23204169
+BugReports: http://github.com/star-dust-ctrl/SA23204169/issues
