@@ -17,7 +17,7 @@
 \section{Vignettes}{
 \tabular{ll}{
 \strong{Title} \tab \strong{Description} \cr
-\href{../doc/Homework.html}{Homework} \tab Homework of Statistical Computin \cr
+\href{../doc/Homework.html}{Homework} \tab Homework of Statistical Computing. \cr
 \href{../doc/PackageExample.html}{PackageExample} \tab Provide some user examples for the functions in this package.
 }
 }
