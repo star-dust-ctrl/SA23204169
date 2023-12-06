@@ -1,0 +1,175 @@
+---
+title: "Homework-2023.10.16"
+author: "Huiyang Peng"
+date: "2023-10-16"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Homework-2023.10.16}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# 1.Class Homework
+
+## Restate
+
+现有$m=1000$个假设，其中95%原假设成立，5%对立假设成立，在原假设下$P\sim U(0,1)$，在对立假设下$P\sim Beta(0.1,1)$。对生成的$m$个$P$值应用Bonferroni校正和B-H校正得到校正后的$P$值，与$\alpha=0.1$比较确定是否拒绝原假设，基于$M=1000$次模拟，估计$FWER,FDR,TPR$。
+
+## Code
+
+```{r}
+M = 1000
+m = 1000
+m1 = m * 0.95
+m2 = m * 0.05
+alpha = 0.1
+bon.FWER <- 0
+bon.V  <- 0
+bon.S <- 0
+bon.T <- 0
+BH.FWER <- 0
+BH.V  <- 0
+BH.S <- 0
+BH.T <- 0
+set.seed(0)
+for (i in 1:M) {
+  p1 <- runif(m1)
+  p2 <- rbeta(m2, 0.1, 1)
+  p <- c(p1, p2)
+  p.bonferroni <- p.adjust(p, method = "bonferroni")
+  p.BH <- p.adjust(p, method = "BH")
+  bon.FWER <- bon.FWER + (any(p.bonferroni[1:m1] <= alpha))/M
+  bon.V <- bon.V + sum((p.bonferroni[1:m1] <= alpha))
+  bon.S <- bon.S + sum((p.bonferroni[(m1+1):m] <= alpha))
+  bon.T <- bon.T + sum((p.bonferroni[(m1+1):m] > alpha))
+  BH.FWER <- BH.FWER + (any(p.BH[1:m1] <= alpha))/M
+  BH.V <- BH.V + sum((p.BH[1:m1] <= alpha))
+  BH.S <- BH.S + sum((p.BH[(m1+1):m] <= alpha))
+  BH.T <- BH.T + sum((p.BH[(m1+1):m] > alpha))
+}
+bon.FDR <- bon.V/(bon.V + bon.S) 
+bon.TPR <- bon.S/(bon.T + bon.S)
+BH.FDR <- BH.V/(BH.V + BH.S) 
+BH.TPR <- BH.S/(BH.T + BH.S)
+result <- data.frame(Method = c("Bonferroni","BH"), FWER = c(bon.FWER,BH.FWER), FDR = c(bon.FDR,BH.FDR), TPR = c(bon.TPR, BH.TPR))
+knitr::kable(result)
+```
+
+# 2.Class Homework
+
+## Restate
+
+假设总体为参数为$\lambda$的指数分布，那么$\hat{\lambda}=1/\bar{X}$是一个极大似然估计。可以得到$\hat{\lambda}$的期望是$\lambda n/(n-1)$，因此估计偏差为$\lambda/(n-1)$，估计标准差为$\lambda n/[(n-1)\sqrt{n-2}]$。进行模拟实验来观察bootstrap方法的表现。
+
+参数如下：指数分布$\lambda=2$，样本量$n=5,10,20$，Bootstrap方法内重复$B=1000$，模拟重复$m=1000$，将bootstrap方法得到的偏差和标准差与理论结果做对比，评价该结果。
+
+## Code
+
+```{r}
+lambda = 2
+B = 1000
+m = 1000
+```
+
+```{r, fig.height=5, fig.width=5}
+# n = 5
+n = 5
+set.seed(0)
+bias.r <- numeric(m)
+sd.r <- numeric(m)
+for (i in 1:m) {
+  x <- rexp(n, lambda)
+  temp <- numeric(B)
+  for (j in 1:B) {
+    x.sample <- sample(x, size = n, replace = TRUE)
+    temp[j] <- 1/mean(x.sample)
+  }
+  bias.r[i] <- mean(temp) - lambda
+  sd.r[i] <- sd(temp)
+}
+par(mfrow = c(2,1))
+hist(bias.r,breaks = 30);abline(v=lambda/(n-1),col='red',lwd=2)
+hist(sd.r, breaks = 30);abline(v=lambda * n/((n-1)*sqrt(n-2)),col='red',lwd=2)
+```
+
+```{r, fig.height=5, fig.width=5}
+# n = 10
+n = 10
+set.seed(0)
+bias.r <- numeric(m)
+sd.r <- numeric(m)
+for (i in 1:m) {
+  x <- rexp(n, lambda)
+  temp <- numeric(B)
+  for (j in 1:B) {
+    x.sample <- sample(x, size = n, replace = TRUE)
+    temp[j] <- 1/mean(x.sample)
+  }
+  bias.r[i] <- mean(temp) - lambda
+  sd.r[i] <- sd(temp)
+}
+par(mfrow = c(2,1))
+hist(bias.r,breaks = 30);abline(v=lambda/(n-1),col='red',lwd=2)
+hist(sd.r, breaks = 30);abline(v=lambda * n/((n-1)*sqrt(n-2)),col='red',lwd=2)
+```
+
+```{r, fig.height=5, fig.width=5}
+# n = 20
+n = 20
+set.seed(0)
+bias.r <- numeric(m)
+sd.r <- numeric(m)
+for (i in 1:m) {
+  x <- rexp(n, lambda)
+  temp <- numeric(B)
+  for (j in 1:B) {
+    x.sample <- sample(x, size = n, replace = TRUE)
+    temp[j] <- 1/mean(x.sample)
+  }
+  bias.r[i] <- mean(temp) - lambda
+  sd.r[i] <- sd(temp)
+}
+par(mfrow = c(2,1))
+hist(bias.r,breaks = 30);abline(v=lambda/(n-1),col='red',lwd=2)
+hist(sd.r, breaks = 30);abline(v=lambda * n/((n-1)*sqrt(n-2)),col='red',lwd=2)
+```
+
+## 评价结果
+
+可以看出，样本数较少时，bootstrap方法所得到的均值和方差值分布都较为分散，且估计效果不好，与理论偏差相差较大。随着样本数增加，bootstrap方法所得估计与理论偏差接近，方差减小。
+
+# 3.Exercise 7.3
+
+## Restate
+
+用Bootstrap方法得到Example 7.2中相关性统计量的一个bootstrap t置信区间。
+
+## Code
+
+```{r}
+library(bootstrap)
+B <- 200
+n <- nrow(law)
+R <- numeric(B)
+set.seed(0)
+for (b in 1:B) {
+  i <- sample(1:n, size = n, replace = TRUE)
+  LSAT <- law$LSAT[i]
+  GPA <- law$GPA[i]
+  R[b] <- cor(LSAT, GPA)
+}
+mean.R <- mean(R)
+se.R <- sd(R)
+t <- qt(p = 0.975, df = n-1)
+cat("The bootstrap t confidence interval for correlation statistic is [", 
+    mean.R - t * se.R, ",", mean.R + t * se.R, "]")
+```
+
+由于$0\le R\le 1$，所以也可以将该置信区间写作$[0.515 , 1]$。
+

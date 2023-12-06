@@ -1,0 +1,227 @@
+---
+title: "Homework-2023.10.9"
+author: "Huiyang Peng"
+date: "2023-10-9"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Homework-2023.10.9}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Variance of $\hat{\theta}^M$ and $\hat{\theta}^S$
+
+## Restate
+
+$\hat{\theta}^M = \frac{1}{Mk}\sum_{i=1}\sigma_i^2+Var(\theta_I)$，其中$\theta_i=E[g(U)|I=i]$,$\sigma_i^2=Var[g(U)|I=i]$，$I$服从$\{1,\dots,k\}$上的均匀分布。
+
+证明：$g$是$(a,b)$上的连续函数，则$b_i-a_i\rightarrow 0$时,$Var(\hat{\theta}^S)/Var(\hat{\theta}^M)\rightarrow 0$。
+
+## Proof
+
+不会证$(a,b)$开区间上连续的情况，但如果是$[a,b]$闭区间上连续则容易得到：
+
+$f$在$[a,b]$上连续，且$[a,b]$是一个闭区间，所以$f$在$[a,b]$上一致连续，因此$\forall \epsilon >0$，$\exists \delta$，$s.t. |x-y|<\delta$时，$|f(x)-f(y)|\le \epsilon$，因此，当$b_i-a_i<\delta$时，$Var(g(U)|I=i)<\epsilon^2$，即$\sigma^2_i<\epsilon^2$，此时$Var(\hat{\theta}^S)=\frac{1}{Mk}\sum_{i=1}^k \sigma_i^2<\frac{\epsilon^2}{M}$，因为$b_i-a_i\rightarrow 0$所以$|b_i-a_i|<\delta$可以成立，因此$Var(\hat{\theta}^S)\rightarrow 0$，$Var(\hat{\theta}^S)/Var(\hat{\theta}^M)\rightarrow 0$。
+
+
+# Exercise 5.13
+
+## Restate
+
+找两个重要性函数$f_1,f_2$，支撑在$(1,\infty)$上且和$g(x)=\frac{x^2}{\sqrt{2\pi}}e^{-x^2/2}$相近。解释这两个重要性函数在估计$\int_1^{\infty}\frac{x^2}{\sqrt{2\pi}}e^{-x^2/2}dx$时哪个产生的方差较小。
+
+## Choose function 
+
+$f_1(x)=e^{-x^2/2},f_2(x)=e^{-x^2/4}$
+
+$Var(\hat{\theta}_1)=\frac{1}{n}\int_1^{+\infty} \frac{\frac{x^4}{2\pi}e^{-x^2}}{2.515e^{-\frac{1}{2}x^2}}dx\approx \frac{0.229}{n}$
+
+$Var(\hat{\theta}_2)=\frac{1}{n}\int_1^{+\infty} \frac{\frac{x^4}{2\pi}e^{-x^2}}{1.177e^{-\frac{1}{4}x^2}}dx\approx \frac{0.168}{n}$
+
+因此$f_2$的估计效果更好，产生更小的方差。
+
+# Exercise 5.14
+
+## Restate
+
+用蒙特卡洛法进行重要性采样得到一个$\int_1^{\infty}\frac{x^2}{\sqrt{2\pi}}e^{-x^2/2}dx$的估计。
+
+## Settings
+
+$g(x)=\frac{x^2}{\sqrt{2\pi}}e^{-x^2/2}$
+
+$f(x)=e^{-x^2/4}$
+
+```{r}
+set.seed(0)
+g <- function(x) 
+  return(x^2*exp(-0.5*x^2)/sqrt(2*pi)*(x>1))
+f <- function(x) 
+  return(1/sqrt(4*pi)*exp(-0.25*x^2))
+#C = 1 / integrate(f, 1, Inf)$value
+#e <- function(x)
+  #return(g(x) / (C * f(x)))
+x = rnorm(1e5, mean = 0, sd=sqrt(2))
+est = mean(g(x)/f(x))
+v = var((g(x)/f(x))[x>1])
+cat('Mean: ', est,"; Variance: ", v)
+```
+
+# Exercise 5.15
+
+## Restate
+
+得到Example 5.13中的分层重要性采样估计，将其与Example 5.10的结果进行对比。
+
+## Code
+
+```{r}
+gdivf <- function(x){
+  g <- exp(-x - log(1+x^2)) * (x > 0) * (x < 1)
+  f <- 5 * exp(-x)/ (1-exp(-1))
+  return(g/f)
+}
+gen_data <- function(n,left,right){
+  dat = NULL
+  while(length(dat)<n){
+    u = runif(n)
+    x <- - log(1 - u * (1 - exp(-1)))
+    ind <- x>left & x<right
+    x <- x[ind]
+    dat <- c(dat, x[1:min(length(x), n-length(dat))])
+  }
+  return(dat)
+}
+set.seed(0)
+theta = NULL
+for (i in 1:5) {
+  x = gen_data(2000,(i-1)/5,i/5)
+  temp = gdivf(x)
+  theta = rbind(theta, temp)
+}
+theta0 = colSums(theta)
+cat("Mean:", mean(theta0),";Se:", sd(theta0), "\n")
+cat("In example 5.10, Mean:", 0.52506988, ";Se:", 0.09658794)
+```
+
+因此，分层重要性函数抽样法是更优的。
+
+# Exercise 6.5
+
+## Restate
+
+从$\chi^2(2)$中抽取$n=20$的样本，用蒙特卡洛法估计由此生成的95%t区间覆盖真实均值的概率。将t区间结果和Example 6.4中的模拟结果对比。
+
+## Code
+
+```{r}
+set.seed(0)
+n = 20
+result = rep(FALSE, 10000)
+alpha = qt(p = 0.975,df=19)
+for (i in 1:10000) {
+  x = rchisq(n, df=2)
+  mu = mean(x)
+  se = sd(x)
+  left = mu - alpha * se/sqrt(20)
+  right = mu + alpha * se/sqrt(20)
+  if(left < 2 && right > 2){
+    result[i] = TRUE
+  }
+}
+cat("The probability that t-interval can cover real value is",mean(result), ".")
+```
+
+```{r}
+# simulation example 6.4
+set.seed(0)
+n = 20
+result = rep(FALSE, 10000)
+alpha = qchisq(0.05, df=n-1)
+for (i in 1:10000) {
+  x <- rnorm(n, mean=0, sd=2)
+  UCL <- (n-1) * var(x) / alpha
+  if(UCL > 4){
+    result[i] = TRUE
+  }
+}
+cat("The probability that 95% confidence interval can cover real value is",mean(result), ".")
+```
+
+# Exercise 6.A
+
+## Restate
+
+用蒙特卡洛模拟当总体非正态时，研究t检验的Type I错误率是否近似等于$\alpha$。模拟以下几个情景：
+
+$(i)\chi^2(1),(ii)Uniform(0,2),(iii)Exponential(rate=1)$，对他们的均值进行两侧检验。
+
+## Code
+
+```{r}
+# chi-square distribution
+set.seed(0)
+n = 20
+result = rep(FALSE, 10000)
+alpha = qt(p = 0.975,df=19)
+for (i in 1:10000) {
+  x = rchisq(n, df=1)
+  mu = mean(x)
+  se = sd(x)
+  left = mu - alpha * se/sqrt(20)
+  right = mu + alpha * se/sqrt(20)
+  if(left < 1 && right > 1){
+    result[i] = TRUE
+  }
+}
+cat("The probability that t-interval can cover real value in chi-square distribution is",mean(result), ".")
+```
+
+```{r}
+# uniform distribution
+set.seed(0)
+n = 20
+result = rep(FALSE, 10000)
+alpha = qt(p = 0.975,df=19)
+for (i in 1:10000) {
+  x = runif(n, 0, 2)
+  mu = mean(x)
+  se = sd(x)
+  left = mu - alpha * se/sqrt(20)
+  right = mu + alpha * se/sqrt(20)
+  if(left < 1 && right > 1){
+    result[i] = TRUE
+  }
+}
+cat("The probability that t-interval can cover real value in uniform distribution is",mean(result), ".")
+```
+
+```{r}
+# Exponential distribution
+set.seed(0)
+n = 20
+result = rep(FALSE, 10000)
+alpha = qt(p = 0.975,df=19)
+for (i in 1:10000) {
+  x = rexp(n, rate=1)
+  mu = mean(x)
+  se = sd(x)
+  left = mu - alpha * se/sqrt(20)
+  right = mu + alpha * se/sqrt(20)
+  if(left < 1 && right > 1){
+    result[i] = TRUE
+  }
+}
+cat("The probability that t-interval can cover real value in exponential distribution is",mean(result), ".")
+```
+
+蒙特卡洛模拟结果显示t检验对于均匀分布的均值检验效果较好，对于卡方分布和指数分布效果较差，这可能是因为均匀分布是关于均值对称的，而卡方分布和指数分布都是有偏的。
+
+
+

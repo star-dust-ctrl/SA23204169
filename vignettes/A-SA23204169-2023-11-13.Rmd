@@ -1,0 +1,140 @@
+---
+title: "Homework-2023.11.13"
+author: "Huiyang Peng"
+date: "2023-11-13"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Homework-2023.11.13}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# After class exercise
+
+## Restate
+
+设$X_1,\cdots, X_n i.i.d. \sim Exp(\lambda)$, 因为某种原因，只知道$X_i$落在某个区间$(u_i,v_i)$, 其中$u_i,v_i$是两个非随机的已知常数。这种数据称为区间删失数据。
+
+(1)分别极大化观测数据的似然函数与采用EM算法求解$\lambda$的MLE，证明EM算法收敛于观测数据的MLE，且收敛有线性速度。
+
+(2)设$(u_i,v_i)$,$i=1,\cdots,n(=10)$的观测值为$(11,12),(8,9),(27,28),(13,14),(16,17),(0,1),(23,24),(10,11),(24,25),(2,3)$，试分别编程实现上述两种算法以得到$\lambda$的MLE的数值解。
+
+## Solution
+
+(1)
+
+$L(\lambda)=\prod_{i=1}^n(e^{-\lambda u_i}-e^{-\lambda v_i})$, $l(\lambda)=\sum_{i=1}^n \log(e^{-\lambda u_i}-e^{-\lambda v_i})$
+
+MLE: $\hat{\lambda}$满足$\sum_{i=1}^n\frac{-u_ie^{-\lambda u_i}+v_ie^{-\lambda v_i}}{e^{-\lambda u_i}-e^{-\lambda v_i}}=0$.
+
+EM算法：Complete data LF: $l(\lambda|x_i)=n\log\lambda -\lambda\sum_{i=1}^n x_i$, 于是$E(l(\lambda|x_i)|(u_i,v_i))=n\log \lambda -\lambda\sum_{i=1}^n \frac{\int_{u_i}^{v_i}x\lambda_0 e^{-\lambda_0 x}dx}{\int_{u_i}^{v_i}\lambda_0 e^{-\lambda_0 x}dx}=n\log \lambda-n\frac{\lambda}{\lambda_0}-\lambda\sum_{i=1}^n \frac{u_ie^{-\lambda_0 u_i}-v_ie^{-\lambda_0 v_i}}{e^{-\lambda_0 u_i}-e^{-\lambda_0 v_i}}$
+
+由此可以得到更新公式：$\lambda = \frac{n}{\frac{n}{\lambda_0}+\sum_{i=1}^n \frac{u_ie^{-\lambda_0 u_i}-v_ie^{-\lambda_0v_i}}{e^{-\lambda_0 u_i}-e^{-\lambda_0v_i}}}$
+
+令$\lambda=\lambda_0$，得$\lambda_0$满足$\sum_{i=1}^n \frac{u_ie^{-\lambda_0 u_i}-v_ie^{-\lambda_0v_i}}{e^{-\lambda_0 u_i}-e^{-\lambda_0v_i}}=0$，收敛性得证。
+
+另一方面$|\lambda-\lambda^*|=|\frac{n}{\frac{n}{\lambda_0}+\sum_{i=1}^n \frac{u_ie^{-\lambda_0 u_i}-v_ie^{-\lambda_0v_i}}{e^{-\lambda_0 u_i}-e^{-\lambda_0v_i}}}-\lambda^*|=|f(\lambda_0)-f(\lambda^*)|=|f'(\eta)||\lambda_0-\lambda^*|$，其中$\eta\in(\lambda^*,\lambda_0)$, $f(x)=\frac{n}{\frac{n}{x}+\sum_{i=1}^n  \frac{u_ie^{-x u_i}-v_ie^{-xv_i}}{e^{-x u_i}-e^{-xv_i}}}$
+
+$$f'(x)=\frac{\frac{n^2}{x^2}-n\sum_{i=1}^n\frac{(u_i-v_i)^2e^{-x(u_i+v_i)}}{(e^{-xu_i}-e^{xv_i})^2}}{(\frac{n}{x}+\sum_{i=1}^n\frac{u_ie^{-xu_i}-v_ie^{-xv_i}}{e^{-xu_i}-e^{-xv_i}})^2}\xrightarrow{x\rightarrow \lambda^*}\frac{\frac{n^2}{\lambda^{*2}}-n\sum_{i=1}^n \frac{(u_i-v_i)e^{-\lambda^*(u_i+v_i)}}{(e^{-\lambda^* u_i}-e^{-\lambda^* v_i})^2}}{\frac{n^2}{\lambda^{*2}}}<1$$，因此有线性的收敛速度。
+
+(2)
+
+```{r}
+# MLE
+u <- c(11,8,27,13,16,0,23,10,24,2)
+v <- c(12,9,28,14,17,1,24,11,25,3)
+Likelihood <- function(lambda){
+  top <- -u * exp(-lambda * u) + v * exp(-lambda * v)
+  down <- exp(-lambda * u) - exp(-lambda * v)
+  return(sum(top/down))
+}
+lambda.star1 <- uniroot(Likelihood, interval = c(0,10))$root
+
+lambda.star1
+```
+
+```{r}
+n <- length(u)
+EM <- function(lambda0){
+  up <- u * exp(-lambda0 * u)-v * exp(-lambda0 * v)
+  down <- exp(-lambda0 * u) - exp(-lambda0 * v)
+  un <- n/lambda0 + sum(up/down)
+  return(n/un)
+}
+lambda <- 1
+while (TRUE) {
+  lambda.star2 <- EM(lambda)
+  if(abs(lambda.star2-lambda)<0.0001){
+    break
+  }
+  lambda <- lambda.star2
+}
+
+lambda.star2
+```
+
+# Exercise 11.8
+
+## Restate
+
+在Morra game中，如果支付矩阵的每个元素都减去一个常数或者乘以一个正数，那么最优策略集是不会变的。但是这时simplex(boot)可能会在不同的基本可行点（也是最优的）终止.令$B=A+2$,找到$B$的解，并验证他是$A$的极限点之一。同时，找出游戏A和B各自的总支付。
+
+```{r}
+library(boot)
+solve.game <- function(A) {
+m <- nrow(A)
+n <- ncol(A)
+it <- n^3
+a <- c(rep(0, m), 1) 
+A1 <- -cbind(t(A), rep(-1, n)) 
+b1 <- rep(0, n)
+A3 <- t(as.matrix(c(rep(1, m), 0))) 
+b3 <- 1
+sx <- simplex(a=a, A1=A1, b1=b1, A3=A3, b3=b3,
+maxi=TRUE, n.iter=it)
+a <- c(rep(0, n), 1) 
+A1 <- cbind(A, rep(-1, m)) 
+b1 <- rep(0, m)
+A3 <- t(as.matrix(c(rep(1, n), 0))) 
+b3 <- 1
+sy <- simplex(a=a, A1=A1, b1=b1, A3=A3, b3=b3,
+maxi=FALSE, n.iter=it)
+soln <- list("A" = A,
+"x" = sx$soln[1:m],
+"y" = sy$soln[1:n],
+"v" = sx$soln[m+1])
+soln
+}
+```
+
+```{r}
+# for game A
+A <- matrix(c( 0,-2,-2,3,0,0,4,0,0,
+2,0,0,0,-3,-3,4,0,0,
+2,0,0,3,0,0,0,-4,-4,
+-3,0,-3,0,4,0,0,5,0,
+0,3,0,-4,0,-4,0,5,0,
+0,3,0,0,4,0,-5,0,-5,
+-4,-4,0,0,0,5,0,0,6,
+0,0,4,-5,-5,0,0,0,6,
+0,0,4,0,0,5,-6,-6,0), 9, 9)
+s <- solve.game(A)
+# solution
+cat(round(cbind(s$x, s$y), 7))
+# value
+cat(s$v)
+```
+
+```{r}
+s <- solve.game(A+2)
+# solution
+round(cbind(s$x, s$y), 7)
+# value
+cat(s$v)
+```

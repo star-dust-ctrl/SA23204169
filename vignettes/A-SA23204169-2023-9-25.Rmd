@@ -1,0 +1,103 @@
+---
+title: "Homework-2023.9.25"
+author: "Huiyang Peng"
+date: "2023-9-25"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Homework-2023.9.25}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Buffon’s niddle experiment
+
+## Restate
+
+$\rho = \frac{l}{d}$取值为多少时，$\hat{\pi}$的渐进方差最小？
+
+取三个不同的$\rho$值，并用蒙特卡洛法模拟验证这一结果。
+
+## Computing
+
+$\frac{m}{n}=\frac{2l}{d\hat{\pi}}$,$\frac{1}{\hat{\pi}}=\frac{d}{2l}\cdot \frac{m}{n}$.
+
+$p=\frac{2l}{d\pi}$,then $m\sim B(n,p)$.
+
+$E(\frac{d}{2l}\cdot\frac{m}{n})=\frac{d}{2l}\cdot p=\frac{1}{\pi}$,$var(\frac{d}{2l}\cdot\frac{m}{n})=\frac{d^2}{4l^2n^2}np(1-p)$.
+
+So $\sqrt{n}(\frac{1}{\hat{\pi}}-\frac{1}{\pi})\rightarrow N(0,\frac{d^2}{4l^2}p(1-p))$.
+
+Let $g(t)=\frac{1}{t}$, then $g'(t)=-\frac{1}{t^2}$, we have $\sqrt{n}(\hat{\pi}-\pi)\rightarrow N(0,\frac{\pi^4 d^2}{4l^2}p(1-p))\sim N(0,\pi^2\frac{1-p}{p})$.
+
+$p=\frac{2l}{d\pi}=\frac{2}{\pi}\rho$,$\rho \in [0,1]$, so $p\in[0,\frac{2}{\pi}]$, then when $\rho = 1$, the asymptotic variance is minimized.
+
+## Simulation
+
+```{r}
+# set random seed
+set.seed(0)
+
+# settings
+N = 1e6
+d = 1
+rho = c(0.3,0.6,1)
+for (l in rho) {
+  X <- matrix(runif(N*100, 0, d/2),nrow = 100)
+  Y <- matrix(runif(N*100, 0, pi/2),nrow = 100)
+  pi.hat = 2*l/d/rowMeans(l/2*sin(Y)>X)
+  cat("The variance of estimator when rho =",l,"is",var(pi.hat),"\n")
+  rm(list = c("X","Y"))
+  gc()
+}
+```
+
+# Exercise 5.6
+
+## Restate
+
+考虑蒙特卡洛积分$\theta = \int_0^1 e^x dx$.考虑对偶变量法,计算$Cov(e^U,e^{1-U})$和$Var(e^U+e^{1-U})$,$U\sim U(0,1)$.
+
+使用对偶变量法相比于简单蒙特卡洛能够减少多少比例的$\hat{\theta}$的方差.
+
+## Answer
+
+$Cov(e^U,e^{1-U})=E(e)-E(e^U)E(e^{1-U})=e-(e-1)^2=-e^2+3e-1<0$.
+
+$Var(e^U+e^{1-U})=Var(e^U)+Var(e^{1-U})+2Cov(e^U,e^{1-U})=2(\frac{1}{2}e^2-\frac{1}{2}-(e-1)^2)+2(-e^2+3e-1)=-3e^2+10e-5$.
+
+对偶变量法：$\hat{\theta_1}=\frac{1}{m}\sum_{i=1}^\frac{m}{2}e^{U_i}+e^{1-U_i}$, $Var(\hat{\theta_1})=\frac{1}{m^2}\frac{m}{2}(−3e^2+10e−5)=\frac{1}{2m}(-3e^2+10e-5)$.
+
+简单蒙特卡洛：$\hat{\theta_2}=\frac{1}{m}\sum_{i=1}^m e^{U_i}$, $Var(\hat{\theta_2})=\frac{1}{m^2}m(\frac{1}{2}e^2-\frac{1}{2}-(e-1)^2)=\frac{1}{2m}(-e^2+4e-3)$.
+
+$Var(\hat{\theta_1})/Var(\hat{\theta_2})=\frac{-3e^2+10e-5}{-e^2+4e-3}=3.23\%$,大约能把方差减小到3.23%，即减少了约96.77%.
+
+# Exercise 5.7
+
+## Restate
+
+用蒙特卡洛模拟通过对偶变量法和简单蒙特卡洛对Exercise 5.6中的$\theta$进行估计，并对减少方差的比例进行经验估计。
+
+## Answer
+
+```{r}
+# settings
+N = 1e5
+cyc = 100
+set.seed(0)
+
+U1 = matrix(runif(N*cyc), nrow = cyc)
+U2.pre = matrix(runif(N/2*cyc),nrow = cyc)
+U2 = cbind(U2.pre, 1-U2.pre)
+theta1=rowMeans(exp(U1))
+theta2=rowMeans(exp(U2))
+
+cat("The output of Simple MC:", mean(theta1), "Variance:", var(theta1),"\n",
+    "The output of Antithetic variables:", mean(theta2), "Variance:", var(theta2),"\n",
+    "The variance is decreased to", var(theta2)/var(theta1), "namely by", 1-var(theta2)/var(theta1))
+```

@@ -1,0 +1,15 @@
+Package: SA23204169
+Type: Package
+Title: The final project for 'Statistical Computing'
+Version: 1.0
+Date: 2023-12-06
+Author: Huiyang Peng
+Maintainer: Huiyang Peng <kisstherain@mail.ustc.edu.cn>
+Description: Summarise all homework in this course, implement K-means with R and Rcpp by myself and compare their efficiency with built-in function kmeans, implement the subgroup method in a 2016 paper.
+License: GPL (>= 2)
+Imports: Rcpp, microbenchmark, MASS, methods, mvtnorm, ggplot2, tidyverse, bootstrap, boot, DAAG, coda
+LinkingTo: Rcpp
+RoxygenNote: 7.2.3
+Encoding: UTF-8
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr

@@ -1,0 +1,193 @@
+---
+title: "Homework-2023.9.19"
+author: "Huiyang Peng"
+date: "2023-9-18"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Homework-2023.9.19}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r}
+# load plot library
+library(ggplot2)
+```
+
+# Blackboard Question
+
+## Restate
+
+利用逆变换法复现函数`sample`的部分功能`(replace = TRUE)`。
+
+## Implementation
+
+```{r}
+# implement of sample() when replace = TRUE
+sample.me <- function(x, size, prob = NULL){
+  if(!is.null(prob)){
+    cump = cumsum(prob)
+  }else{
+      prob = rep(1/len(x),len(x)) # assign default value
+      cump = cumsum(prob)
+    }
+  U = runif(size)
+  return(x[findInterval(U,cump)+1]) # discrete inverse transformation
+}
+```
+
+## Example
+
+```{r}
+x = c(1,2,3,4)
+prob = c(0.2,0.2,0.3,0.3)
+samples = sample.me(x = x, size = 10000, prob = prob)
+table(samples)
+```
+
+# Exercise 3.2
+
+## Restate
+
+Standard Laplace distribution的密度函数为$f(x)=\frac{1}{2}e^{-|x|}$，用逆变换法从该分布中生成1000个随机样本，并用本章中某种方法将他与目标分布进行比较。
+
+## Compute
+
+$f(x)=\frac{1}{2}e^{-|x|}$，于是$F(x)=\frac{1}{2}e^x(x\le 0),1-\frac{1}{2}e^{-x}(x> 0)$，于是有$F^{-1}(u)=ln(2u)(0<u\le \frac{1}{2}),-ln(2-2u)(\frac{1}{2}< u<1)$
+
+## Code
+
+```{r}
+# The function to generate samples from standard Laplace distribution
+rlaplace <- function(n){
+  U = runif(n)
+  samples = ifelse(U < 1/2, log(2*U),-log(2-2*U)) # continuous inverse transformation
+  return(samples)
+}
+```
+
+```{r}
+# generate samples and qqplot
+n = 1000
+samples = rlaplace(1000)
+sampleq = seq(from = 1/(2*n),to = 1- 1/(2*n),by = 1/n)
+samplet = sort(ifelse(samples < 0, 1/2*exp(samples), 1-1/2*exp(-samples)))
+dat = data.frame(`q.therotical` = samplet, `q.sample` = sampleq)
+ggplot(dat, aes(x = `q.therotical`, y = `q.sample`)) +
+  geom_point() +
+  geom_abline(slope = 1,intercept = 0) +
+  ggtitle('qqplot of generated samples') +
+  theme(plot.title = element_text(hjust=0.5,size=rel(1.5)))
+```
+
+因此，认为生成的数据服从Standard Laplace distribution。
+
+# Exercise 3.7
+
+## Restate
+
+写一个函数，用接受拒绝法实现从Beta(a,b)分布中抽取n个随机样本。从Beta(3,2)中生成1000个随机样本，画出样本的频率分布直方图并叠加理论密度曲线。
+
+## Prepare
+
+$Beta(a,b):f(x)=\frac{1}{Beta(a,b)}x^{a-1}(1-x)^{b-1}$
+
+## Code
+
+```{r}
+# return the pdf of Beta(a,b) distribution at x
+pdfBeta <- function(a,b,x){
+  density = 1/beta(a,b)*x^(a-1)*(1-x)^(b-1)
+  return(density)
+}
+
+# Use acceptance-rejection method to generate samples from Beta(a,b)
+myBeta <- function(a,b,n){
+  if((a <= 1)|(b <= 1)){
+    stop('Input a,b must > 1.')
+  }else{
+    samples = NULL
+    len = 0
+    maxnum = pdfBeta(a,b,(a-1)/(a+b-2))
+    # loop until there are enough samples
+    while(len < n){
+      U = runif(n)
+      X = runif(n)
+      sample.temp = X[U<=pdfBeta(a,b,X)/maxnum]
+      samples = c(samples, sample.temp)
+      len = len + length(sample.temp)
+    }
+    return(samples[1:n])
+  }
+}
+```
+
+```{r}
+#sample and draw
+samples = myBeta(3,2,1000)
+xticks = seq(from = 0, to = 1, length.out = 1000)
+yticks = pdfBeta(3,2,xticks)
+dat = data.frame(samples, xticks, yticks)
+ggplot(dat)+
+  geom_histogram(mapping = aes(x=samples,y=after_stat(density)),binwidth = 0.02,fill='grey')+
+  geom_line(mapping = aes(x=xticks,y=yticks),color='red')
+```
+
+# Exercise 3.9
+
+## Restate
+
+Rescaled Epanechnikov kernel:$f_e(x)=\frac{3}{4}(1-x^2),|x|\le 1$。
+
+有一种算法模拟该分布：
+
+生成iid $U_1,U_2,U_3 \sim Uniform(-1,1)$。如果$|U_3|\ge|U_2|,|U_3|\ge|U_1|$则输出$U_2$，否则输出$U_3$。
+
+写一个函数实现从$f_e$中抽取随机样本，并构造样本直方图密度估计。
+
+## Code
+
+```{r}
+# write a function to sample from Rescaled Epanechnikov kernel
+repane <- function(n){
+  u1 = runif(n,-1,1)
+  u2 = runif(n,-1,1)
+  u3 = runif(n,-1,1)
+  logic1 = (abs(u3)>=abs(u2))&(abs(u3)>=abs(u1))
+  logic2 = !logic1
+  samples = logic1*u2 + logic2*u3
+  return(samples)
+}
+```
+
+```{r}
+# generate samples
+samples = repane(10000)
+xticks = seq(from = -1, to = 1, length.out = 1000)
+yticks = 3/4*(1-xticks^2)
+dat = data.frame(samples, xticks, yticks)
+ggplot(dat)+
+  geom_histogram(mapping = aes(x=samples,y=after_stat(density)),binwidth = 0.02,fill='grey')+
+  geom_line(mapping = aes(x=xticks,y=yticks),color='red')
+```
+
+这里取得直方图密度估计为：$f_n(x)=\frac{1}{nh}R(t_i,t_{i+1})$，其中$n=10000,h=0.02$
+
+
+# Exercise 3.10
+
+## Restate
+
+证明Ex3.9里给出的算法生成的变量服从$f_e$。
+
+$f_e(x) = \frac{3}{4}(1-x^2),F_e(x)=\frac{3}{4}x-\frac{1}{4}x^3|_{-1}^x=-\frac{1}{4}x^3+\frac{3}{4}x+\frac{1}{2}$
+
+$P(X\le x)=P(U_2\le x,|U_3|=max(|U_1|,|U_2|,|U_3|))+P(U_3\le x,|U_3|\neq max(|U_1|,|U_2|,|U_3|)) \\ = \frac{1}{2}\int_{-1}^xdu_2\int_{|u_2|}^1d|u_3|\int_0^{|u_3|}d|u_1|+\frac{1}{2}\int_{-1}^xdu_3\int_0^1 d|u_1|\int_{|u_3|}^1 d|u_2|+\frac{1}{2}\int_{-1}^xdu_3\int_{|u_3|}^1d|u_1|\int_{0}^{|u_3|}d|u_2|\\ =\frac{1}{2}(\frac{1}{2}x-\frac{1}{6}x^3+\frac{1}{3})+\frac{1}{2}\int_{-1}^x(1-|u_3|)du_3+\frac{1}{2}\int_{-1}^x(|u_3|-u_3^2)du_3\\ =-\frac{1}{12}x^3+\frac{1}{4}x+\frac{1}{6}+\frac{1}{2}\int_{-1}^x(1-u_3^2)du_3=-\frac{1}{12}x^3+\frac{1}{4}x+\frac{1}{6}+\frac{1}{2}(x+1)-\frac{1}{6}(x^3+1)=-\frac{1}{4}x^3+\frac{3}{4}x+\frac{1}{2}$
+
+由是可得Ex3.9中的算法生成服从$f_e$的分布。
